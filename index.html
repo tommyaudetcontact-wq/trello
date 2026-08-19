@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlayStation XMB Kanban Studio</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <style>
+    :root {
+      --ps-glow: rgba(0, 210, 255, 0.4);
+      --ps-accent: #00d2ff;
+      --ps-card-bg: rgba(15, 23, 42, 0.78);
+      --ps-border: rgba(255, 255, 255, 0.12);
+      --ps-dark-surface: rgba(10, 15, 29, 0.85);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
+      color: #e2e8f0;
+      background: radial-gradient(circle at 20% 20%, #1e1b4b 0%, #080c14 100%);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .xmb-wave {
+      position: fixed;
+      top: 0; left: 0; width: 200%; height: 100%;
+      background: radial-gradient(ellipse 70% 35% at 50% 40%, rgba(0, 210, 255, 0.12), transparent 70%);
+      animation: waveFloat 18s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .xmb-wave-secondary {
+      position: fixed;
+      top: 20%; left: -50%; width: 200%; height: 100%;
+      background: radial-gradient(ellipse 60% 40% at 50% 60%, rgba(147, 51, 234, 0.08), transparent 70%);
+      animation: waveFloat2 24s ease-in-out infinite alternate;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes waveFloat {
+      0% { transform: translateY(-5%) rotate(-2deg); }
+      100% { transform: translateY(5%) rotate(2deg); }
+    }
+    @keyframes waveFloat2 {
+      0% { transform: translateY(6%) rotate(3deg); }
+      100% { transform: translateY(-6%) rotate(-3deg); }
+    }
+
+    .main-container { position: relative; z-index: 1; }
+
+    .xmb-title {
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      font-weight: 700;
+      text-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
+    }
+
+    .glass-panel {
+      background: var(--ps-card-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--ps-border);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+    }
+
+    .kanban-board {
+      display: flex;
+      gap: 1.25rem;
+      overflow-x: auto;
+      padding-bottom: 2rem;
+      min-height: 80vh;
+      align-items: flex-start;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .kanban-col {
+      min-width: 310px;
+      max-width: 310px;
+      flex: 0 0 310px;
+      display: flex;
+      flex-direction: column;
+      max-height: 82vh;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .col-ghost {
+      opacity: 0.3 !important;
+      background: rgba(0, 210, 255, 0.15) !important;
+      border: 2px dashed var(--ps-accent) !important;
+    }
+
+    .col-chosen {
+      box-shadow: 0 12px 30px rgba(0, 210, 255, 0.4) !important;
+      transform: scale(1.02);
+    }
+
+    .col-header {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.15rem;
+      letter-spacing: 1px;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--ps-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .col-drag-handle {
+      cursor: grab;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-grow: 1;
+    }
+
+    .col-drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .task-list {
+      flex-grow: 1;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow-y: auto;
+      min-height: 120px;
+      touch-action: pan-y;
+    }
+
+    .task-card {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid var(--ps-border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      cursor: grab;
+      position: relative;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .task-card:active {
+      cursor: grabbing;
+    }
+
+    .task-card.sortable-ghost {
+      opacity: 0.35;
+      background: rgba(0, 210, 255, 0.2);
+      border: 2px dashed var(--ps-accent);
+    }
+
+    .task-card.sortable-chosen {
+      box-shadow: 0 8px 25px rgba(0, 210, 255, 0.35);
+      transform: scale(1.02);
+    }
+
+    .task-card.active-timer {
+      border-color: var(--ps-accent);
+      box-shadow: 0 0 15px var(--ps-glow);
+    }
+
+    .task-card.active-timer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--ps-accent);
+      box-shadow: 0 0 10px var(--ps-accent);
+    }
+
+    .color-pill {
+      height: 6px;
+      border-radius: 3px;
+      width: 48px;
+      margin-bottom: 8px;
+    }
+
+    .color-palette {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .color-dot {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .color-dot:hover { transform: scale(1.15); }
+    .color-dot.selected {
+      border-color: #ffffff;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+      transform: scale(1.15);
+    }
+
+    .time-tracker {
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.9rem;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .time-progress-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+
+    .time-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00d2ff, #38bdf8);
+      transition: width 0.3s ease;
+    }
+
+    .time-progress-fill.overtime {
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+    }
+
+    .btn-quick-add {
+      background: transparent;
+      border: 1px dashed var(--ps-border);
+      color: #94a3b8;
+      width: 100%;
+      padding: 0.55rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+    }
+
+    .btn-quick-add:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      border-color: var(--ps-accent);
+    }
+
+    .ps-btn {
+      font-family: 'Rajdhani', sans-serif;
+      letter-spacing: 1.5px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .ps-btn-primary {
+      background: linear-gradient(135deg, #0072ff 0%, #00d2ff 100%);
+      border: none;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(0, 210, 255, 0.25);
+    }
+
+    .ps-btn-primary:hover {
+      box-shadow: 0 4px 20px rgba(0, 210, 255, 0.5);
+      transform: scale(1.02);
+      color: #fff;
+    }
+
+    .modal-content {
+      background: #0d1322;
+      border: 1px solid var(--ps-border);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85);
+      border-radius: 12px;
+    }
+
+    .form-control, .form-select {
+      background: rgba(26, 36, 56, 0.8);
+      border: 1px solid var(--ps-border);
+      color: #fff;
+    }
+
+    .form-control:focus, .form-select:focus {
+      background: rgba(26, 36, 56, 1);
+      border-color: var(--ps-accent);
+      box-shadow: 0 0 12px var(--ps-glow);
+      color: #fff;
+    }
+
+    .comment-bubble {
+      background: rgba(26, 36, 56, 0.6);
+      border-left: 3px solid var(--ps-accent);
+      padding: 0.5rem 0.75rem;
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .inline-add-box {
+      display: none;
+      background: rgba(20, 29, 48, 0.9);
+      border: 1px solid var(--ps-border);
+      border-radius: 6px;
+      padding: 0.65rem;
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body class="p-3 p-md-4">
+  <div class="xmb-wave"></div>
+  <div class="xmb-wave-secondary"></div>
+
+  <div class="main-container container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+      <div>
+        <h2 class="xmb-title m-0 text-white">XMB Task Control</h2>
+        <div class="small text-secondary d-flex align-items-center gap-2">
+          <span>Google Sheets Cloud Sync</span>
+          <span id="sync-status" class="badge bg-success">Synchro active</span>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button class="btn ps-btn btn-outline-info btn-sm" onclick="openNewColModal()">+ Nouvelle Colonne</button>
+        <button class="btn ps-btn btn-outline-secondary btn-sm" onclick="loadCloudData()">🔄 Forcer Synchro</button>
+      </div>
+    </div>
+
+    <!-- Tableau Kanban -->
+    <div class="kanban-board" id="board-container"></div>
+  </div>
+
+  <!-- Modal Nouvelle Colonne -->
+  <div class="modal fade" id="colModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content text-light">
+        <div class="modal-header border-secondary">
+          <h6 class="modal-title xmb-title">Nouvelle Colonne</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label small text-secondary">Nom de la colonne</label>
+          <input type="text" class="form-control form-control-sm" id="new-col-name" placeholder="Ex: Revue de code" onkeydown="if(event.key==='Enter') submitNewColumn()">
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="button" class="btn btn-sm ps-btn ps-btn-primary" onclick="submitNewColumn()">Créer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirmation Suppression -->
+  <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content text-light">
+        <div class="modal-header border-secondary">
+          <h6 class="modal-title xmb-title text-danger" id="confirm-modal-title">Confirmation</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body small text-secondary" id="confirm-modal-text"></div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="button" class="btn btn-sm btn-danger" id="confirm-modal-btn">Confirmer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Détails & Édition Trello Style -->
+  <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content text-light">
+        <div class="modal-header border-secondary pb-2">
+          <div class="w-100">
+            <input type="text" class="form-control fw-bold fs-5 border-0 bg-transparent text-light p-0 mb-2" id="m-title" placeholder="Titre de la tâche">
+            <div class="d-flex align-items-center gap-2">
+              <span class="small text-secondary" style="font-size: 0.8rem;">Badge :</span>
+              <div class="color-palette" id="m-color-palette"></div>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white align-self-start" data-bs-dismiss="modal"></button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label class="form-label small text-secondary">Description</label>
+                <textarea class="form-control" id="m-desc" rows="4" placeholder="Ajouter une description..."></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label small text-secondary">Discussion & Historique</label>
+                <div id="m-comments-list" class="mb-2" style="max-height: 180px; overflow-y: auto;"></div>
+                <div class="input-group">
+                  <input type="text" class="form-control form-control-sm" id="m-new-comment" placeholder="Écrire un commentaire..." onkeydown="if(event.key==='Enter') addComment()">
+                  <button class="btn ps-btn ps-btn-primary btn-sm" onclick="addComment()">Envoyer</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label small text-secondary">Colonne / Statut</label>
+                <select class="form-select form-select-sm" id="m-column"></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label small text-secondary">Date d'échéance</label>
+                <input type="date" class="form-control form-control-sm" id="m-due-date">
+              </div>
+              <div class="mb-3">
+                <label class="form-label small text-secondary">Temps attendu (min)</label>
+                <input type="number" class="form-control form-control-sm" id="m-est" min="0">
+              </div>
+              <div class="mb-3">
+                <label class="form-label small text-secondary">Temps passé (sec)</label>
+                <div class="input-group input-group-sm">
+                  <input type="number" class="form-control" id="m-spent" min="0">
+                  <button class="btn btn-outline-warning" onclick="resetTaskTimer()">0s</button>
+                </div>
+              </div>
+              <hr class="border-secondary">
+              <button class="btn btn-outline-danger btn-sm w-100" onclick="triggerDeleteTask()">Supprimer la tâche</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+          <button type="button" class="btn btn-sm ps-btn ps-btn-primary" onclick="saveTaskModal()">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbxF_bnX7Kq4QNDrhNACTfpvhjGpVPt-gJ6CMy6GkO0qdWH2YfgNkXMdtp6z_ZSkgS0MQA/exec";
+
+    const BADGE_COLORS = [
+      { name: "Cyan", hex: "#00d2ff" },
+      { name: "Bleu", hex: "#2563eb" },
+      { name: "Vert", hex: "#22c55e" },
+      { name: "Jaune", hex: "#eab308" },
+      { name: "Orange", hex: "#f97316" },
+      { name: "Rouge", hex: "#ef4444" },
+      { name: "Violet", hex: "#a855f7" },
+      { name: "Rose", hex: "#ec4899" },
+      { name: "Gris", hex: "#64748b" }
+    ];
+
+    let selectedBadgeColor = "#00d2ff";
+
+    let columns = JSON.parse(localStorage.getItem("trello_cols")) || [
+      { ID: "col_1", Titre: "À faire", Ordre: 1 },
+      { ID: "col_2", Titre: "En cours", Ordre: 2 },
+      { ID: "col_3", Titre: "Terminé", Ordre: 3 }
+    ];
+    let tasks = JSON.parse(localStorage.getItem("trello_tasks")) || [];
+    
+    let activeTimerTaskId = null;
+    let timerInterval = null;
+    let currentModalTaskId = null;
+    let syncTimeout = null;
+    let boardSortableInstance = null;
+
+    const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+    const colModal = new bootstrap.Modal(document.getElementById('colModal'));
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+
+    function setStatus(msg, type = "success") {
+      const el = document.getElementById('sync-status');
+      if (el) {
+        el.className = `badge bg-${type}`;
+        el.innerText = msg;
+      }
+    }
+
+    function commitLocalAndTriggerCloud() {
+      localStorage.setItem("trello_cols", JSON.stringify(columns));
+      localStorage.setItem("trello_tasks", JSON.stringify(tasks));
+      renderBoard();
+
+      setStatus("Synchro...", "warning");
+      clearTimeout(syncTimeout);
+      syncTimeout = setTimeout(async () => {
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+              action: "sync_all",
+              columns: columns,
+              tasks: tasks
+            })
+          });
+          setStatus("Synchro active", "success");
+        } catch (err) {
+          console.error("Erreur synchro cloud:", err);
+          setStatus("Mode Local", "secondary");
+        }
+      }, 1000);
+    }
+
+    async function loadCloudData() {
+      setStatus("Chargement...", "info");
+      try {
+        const res = await fetch(API_URL, { method: "GET", mode: "cors", redirect: "follow" });
+        const json = await res.json();
+        if (json.status === "success") {
+          if (json.columns && json.columns.length > 0) {
+            columns = json.columns.sort((a, b) => (parseInt(a.Ordre, 10) || 0) - (parseInt(b.Ordre, 10) || 0));
+          }
+          if (json.tasks) {
+            tasks = json.tasks.map(t => {
+              let comments = [];
+              try { comments = JSON.parse(t.Commentaires); } catch (e) { comments = []; }
+              return { ...t, Commentaires: Array.isArray(comments) ? comments : [] };
+            });
+          }
+          commitLocalAndTriggerCloud();
+        }
+      } catch (err) {
+        console.warn("Connexion cloud indisponible, utilisation du cache local.", err);
+        setStatus("Cache local actif", "warning");
+      }
+    }
+
+    function formatTime(seconds) {
+      const s = parseInt(seconds, 10) || 0;
+      const mins = Math.floor(s / 60);
+      const secs = s % 60;
+      return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+    }
+
+    function renderBoard() {
+      const board = document.getElementById('board-container');
+      board.innerHTML = '';
+
+      columns.forEach(col => {
+        const colTasks = tasks.filter(t => t.Statut === col.Titre);
+
+        const colEl = document.createElement('div');
+        colEl.className = 'kanban-col glass-panel';
+        colEl.dataset.colId = String(col.ID);
+        colEl.dataset.colTitle = col.Titre;
+
+        colEl.innerHTML = `
+          <div class="col-header">
+            <div class="col-drag-handle">
+              <span class="text-secondary" style="font-size: 1.1rem; cursor: grab;">⠿</span>
+              <span class="text-light fw-bold">${col.Titre}</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-dark border border-secondary">${colTasks.length}</span>
+              <button class="btn btn-link text-secondary p-0 text-decoration-none" onclick="triggerDeleteColumn('${col.ID}')">✕</button>
+            </div>
+          </div>
+          
+          <div class="task-list" id="list-${col.ID}" data-col-title="${col.Titre}"></div>
+
+          <div class="p-2 pt-0">
+            <div class="inline-add-box" id="inline-box-${col.ID}">
+              <input type="text" class="form-control form-control-sm mb-2" id="inline-input-${col.ID}" placeholder="Titre de la tâche..." onkeydown="if(event.key==='Enter') saveInlineTask('${col.ID}', '${col.Titre}')">
+              <div class="d-flex justify-content-end gap-1">
+                <button class="btn btn-sm btn-outline-secondary py-0" onclick="toggleInlineAdd('${col.ID}', false)">Annuler</button>
+                <button class="btn btn-sm ps-btn ps-btn-primary py-0" onclick="saveInlineTask('${col.ID}', '${col.Titre}')">Ajouter</button>
+              </div>
+            </div>
+            <button class="btn-quick-add" id="inline-btn-${col.ID}" onclick="toggleInlineAdd('${col.ID}', true)">+ Ajouter une tâche</button>
+          </div>
+        `;
+
+        const taskList = colEl.querySelector(`#list-${col.ID}`);
+
+        colTasks.forEach(task => {
+          const isRunning = activeTimerTaskId === String(task.ID);
+          const spentSec = parseInt(task.TempsPassé_Sec, 10) || 0;
+          const estMin = parseInt(task.TempsEstimé_Min, 10) || 0;
+          const estSec = estMin * 60;
+          const pct = estSec > 0 ? Math.min(100, Math.round((spentSec / estSec) * 100)) : 0;
+          const isOvertime = estSec > 0 && spentSec > estSec;
+
+          const card = document.createElement('div');
+          card.className = `task-card ${isRunning ? 'active-timer' : ''}`;
+          card.dataset.id = String(task.ID);
+
+          card.onclick = (e) => {
+            if (e.target.closest('button') || e.target.closest('input')) return;
+            openTaskModal(task.ID);
+          };
+
+          card.innerHTML = `
+            <div class="color-pill" style="background: ${task.Couleur || '#00d2ff'}"></div>
+            <div class="fw-semibold text-light mb-1">${task.Titre}</div>
+            ${task.DateEcheance ? `<div class="small text-secondary mb-2">📅 ${task.DateEcheance}</div>` : ''}
+            
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <span class="time-tracker text-info">
+                ⏱️ <span id="timer-${task.ID}">${formatTime(spentSec)}</span> / ${estMin}m
+              </span>
+              <button class="btn btn-sm py-0 px-2 ${isRunning ? 'btn-danger' : 'btn-outline-info'}" onclick="toggleTimer('${task.ID}')">
+                ${isRunning ? 'Pause' : 'Punch'}
+              </button>
+            </div>
+
+            <div class="time-progress-bar">
+              <div class="time-progress-fill ${isOvertime ? 'overtime' : ''}" style="width: ${pct}%"></div>
+            </div>
+          `;
+          taskList.appendChild(card);
+        });
+
+        board.appendChild(colEl);
+
+        // Sortable pour les tâches de chaque colonne
+        new Sortable(taskList, {
+          group: 'xmb-kanban-tasks',
+          animation: 180,
+          ghostClass: 'sortable-ghost',
+          chosenClass: 'sortable-chosen',
+          delay: 40,
+          delayOnTouchOnly: true,
+          touchStartThreshold: 4,
+          onEnd: function (evt) {
+            const taskId = evt.item.dataset.id;
+            const newColTitle = evt.to.dataset.colTitle;
+            const task = tasks.find(t => String(t.ID) === String(taskId));
+            
+            if (task && task.Statut !== newColTitle) {
+              task.Statut = newColTitle;
+              commitLocalAndTriggerCloud();
+            }
+          }
+        });
+      });
+
+      // Initialisation / Réinitialisation propre du Drag & Drop des colonnes
+      if (boardSortableInstance) {
+        boardSortableInstance.destroy();
+      }
+      
+      boardSortableInstance = new Sortable(board, {
+        handle: '.col-drag-handle',
+        animation: 200,
+        ghostClass: 'col-ghost',
+        chosenClass: 'col-chosen',
+        delay: 50,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 5,
+        onEnd: function () {
+          const newOrderedCols = [];
+          board.querySelectorAll('.kanban-col').forEach((el, index) => {
+            const colId = el.dataset.colId;
+            const cObj = columns.find(c => String(c.ID) === String(colId));
+            if (cObj) {
+              cObj.Ordre = index + 1;
+              newOrderedCols.push(cObj);
+            }
+          });
+          columns = newOrderedCols;
+          commitLocalAndTriggerCloud();
+        }
+      });
+    }
+
+    function toggleInlineAdd(colId, show) {
+      document.getElementById(`inline-box-${colId}`).style.display = show ? 'block' : 'none';
+      document.getElementById(`inline-btn-${colId}`).style.display = show ? 'none' : 'block';
+      if (show) document.getElementById(`inline-input-${colId}`).focus();
+    }
+
+    function saveInlineTask(colId, colTitle) {
+      const input = document.getElementById(`inline-input-${colId}`);
+      const title = input.value.trim();
+      if (!title) return;
+
+      const newTask = {
+        ID: "TASK_" + Date.now(),
+        Titre: title,
+        Description: "",
+        Statut: colTitle,
+        TempsEstimé_Min: 30,
+        TempsPassé_Sec: 0,
+        DateEcheance: "",
+        Couleur: "#00d2ff",
+        Commentaires: []
+      };
+
+      tasks.push(newTask);
+      input.value = '';
+      toggleInlineAdd(colId, false);
+      commitLocalAndTriggerCloud();
+    }
+
+    function openNewColModal() {
+      document.getElementById('new-col-name').value = '';
+      colModal.show();
+      setTimeout(() => document.getElementById('new-col-name').focus(), 300);
+    }
+
+    function submitNewColumn() {
+      const name = document.getElementById('new-col-name').value.trim();
+      if (!name) return;
+      columns.push({
+        ID: "col_" + Date.now(),
+        Titre: name,
+        Ordre: columns.length + 1
+      });
+      colModal.hide();
+      commitLocalAndTriggerCloud();
+    }
+
+    function triggerDeleteColumn(colId) {
+      const col = columns.find(c => String(c.ID) === String(colId));
+      if (!col) return;
+
+      document.getElementById('confirm-modal-title').innerText = "Supprimer la colonne";
+      document.getElementById('confirm-modal-text').innerText = `Voulez-vous supprimer "${col.Titre}" et toutes les tâches associées ?`;
+      document.getElementById('confirm-modal-btn').onclick = () => {
+        columns = columns.filter(c => String(c.ID) !== String(colId));
+        tasks = tasks.filter(t => t.Statut !== col.Titre);
+        confirmModal.hide();
+        commitLocalAndTriggerCloud();
+      };
+      confirmModal.show();
+    }
+
+    function toggleTimer(taskId) {
+      const sid = String(taskId);
+      const task = tasks.find(t => String(t.ID) === sid);
+      if (!task) return;
+
+      if (activeTimerTaskId === sid) {
+        clearInterval(timerInterval);
+        activeTimerTaskId = null;
+        commitLocalAndTriggerCloud();
+      } else {
+        if (activeTimerTaskId) clearInterval(timerInterval);
+        activeTimerTaskId = sid;
+        timerInterval = setInterval(() => {
+          task.TempsPassé_Sec = (parseInt(task.TempsPassé_Sec, 10) || 0) + 1;
+          const el = document.getElementById(`timer-${sid}`);
+          if (el) el.innerText = formatTime(task.TempsPassé_Sec);
+        }, 1000);
+      }
+      renderBoard();
+    }
+
+    function renderColorPalette(currentColor) {
+      const palette = document.getElementById('m-color-palette');
+      palette.innerHTML = '';
+      selectedBadgeColor = currentColor || BADGE_COLORS[0].hex;
+
+      BADGE_COLORS.forEach(c => {
+        const dot = document.createElement('div');
+        dot.className = `color-dot ${selectedBadgeColor === c.hex ? 'selected' : ''}`;
+        dot.style.background = c.hex;
+        dot.title = c.name;
+        dot.onclick = () => {
+          selectedBadgeColor = c.hex;
+          document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+          dot.classList.add('selected');
+        };
+        palette.appendChild(dot);
+      });
+    }
+
+    function openTaskModal(taskId) {
+      currentModalTaskId = String(taskId);
+      const task = tasks.find(t => String(t.ID) === currentModalTaskId);
+      if (!task) return;
+
+      document.getElementById('m-title').value = task.Titre;
+      document.getElementById('m-desc').value = task.Description || '';
+      document.getElementById('m-due-date').value = task.DateEcheance || '';
+      document.getElementById('m-est').value = task.TempsEstimé_Min || 0;
+      document.getElementById('m-spent').value = task.TempsPassé_Sec || 0;
+
+      renderColorPalette(task.Couleur || "#00d2ff");
+
+      const colSelect = document.getElementById('m-column');
+      colSelect.innerHTML = '';
+      columns.forEach(col => {
+        const opt = document.createElement('option');
+        opt.value = col.Titre;
+        opt.innerText = col.Titre;
+        opt.selected = col.Titre === task.Statut;
+        colSelect.appendChild(opt);
+      });
+
+      renderCommentsList(task.Commentaires || []);
+      detailModal.show();
+    }
+
+    function renderCommentsList(comments) {
+      const box = document.getElementById('m-comments-list');
+      box.innerHTML = '';
+      if (!comments || comments.length === 0) {
+        box.innerHTML = '<div class="small text-secondary">Aucun historique pour le moment.</div>';
+        return;
+      }
+      comments.forEach(c => {
+        const b = document.createElement('div');
+        b.className = 'comment-bubble';
+        b.innerHTML = `<div class="d-flex justify-content-between text-secondary"><span class="fw-bold">${c.date}</span></div><div class="mt-1">${c.text}</div>`;
+        box.appendChild(b);
+      });
+    }
+
+    function addComment() {
+      const input = document.getElementById('m-new-comment');
+      const text = input.value.trim();
+      if (!text || !currentModalTaskId) return;
+
+      const task = tasks.find(t => String(t.ID) === currentModalTaskId);
+      if (!task) return;
+
+      if (!task.Commentaires) task.Commentaires = [];
+      const now = new Date();
+      task.Commentaires.push({
+        date: `${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        text: text
+      });
+
+      input.value = '';
+      renderCommentsList(task.Commentaires);
+    }
+
+    function saveTaskModal() {
+      const task = tasks.find(t => String(t.ID) === currentModalTaskId);
+      if (!task) return;
+
+      task.Titre = document.getElementById('m-title').value.trim() || task.Titre;
+      task.Description = document.getElementById('m-desc').value.trim();
+      task.Couleur = selectedBadgeColor;
+      task.Statut = document.getElementById('m-column').value;
+      task.DateEcheance = document.getElementById('m-due-date').value;
+      task.TempsEstimé_Min = parseInt(document.getElementById('m-est').value, 10) || 0;
+      task.TempsPassé_Sec = parseInt(document.getElementById('m-spent').value, 10) || 0;
+
+      detailModal.hide();
+      commitLocalAndTriggerCloud();
+    }
+
+    function triggerDeleteTask() {
+      document.getElementById('confirm-modal-title').innerText = "Supprimer la tâche";
+      document.getElementById('confirm-modal-text').innerText = "Voulez-vous définitivement supprimer cette tâche ?";
+      document.getElementById('confirm-modal-btn').onclick = () => {
+        tasks = tasks.filter(t => String(t.ID) !== currentModalTaskId);
+        detailModal.hide();
+        confirmModal.hide();
+        commitLocalAndTriggerCloud();
+      };
+      confirmModal.show();
+    }
+
+    function resetTaskTimer() {
+      document.getElementById('m-spent').value = 0;
+    }
+
+    // Démarrage
+    renderBoard();
+    loadCloudData();
+  </script>
+</body>
+</html>
