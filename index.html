@@ -3,190 +3,515 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PlayStation XMB Kanban Studio</title>
+  <title>Xbox 360 Blades Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Teko:wght@500;600;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <style>
-    :root {
-      --ps-glow: rgba(0, 210, 255, 0.4);
-      --ps-accent: #00d2ff;
-      --ps-card-bg: rgba(15, 23, 42, 0.78);
-      --ps-border: rgba(255, 255, 255, 0.12);
-      --ps-dark-surface: rgba(10, 15, 29, 0.85);
-    }
-
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: 'Inter', sans-serif;
-      color: #e2e8f0;
-      background: radial-gradient(circle at 20% 20%, #1e1b4b 0%, #080c14 100%);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #ffffff;
+      background-color: #0b0714;
       overflow-x: hidden;
       position: relative;
     }
 
-    .xmb-wave {
+    /* --- FOND MULTICOLORE AVEC TRANSITIONS LINÉAIRES --- */
+    .x360-ambient-bg {
       position: fixed;
-      top: 0; left: 0; width: 200%; height: 100%;
-      background: radial-gradient(ellipse 70% 35% at 50% 40%, rgba(0, 210, 255, 0.12), transparent 70%);
-      animation: waveFloat 18s ease-in-out infinite alternate;
-      pointer-events: none;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background-color: #0a0412;
     }
-    .xmb-wave-secondary {
+
+    .bg-color-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      animation-duration: 60s;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+
+    .layer-purple {
+      background: radial-gradient(circle at 50% 50%, #6b21a8 0%, #4a044e 35%, #2e1065 70%, #0f0326 100%);
+      animation-name: blendLayer1;
+    }
+
+    .layer-orange {
+      background: radial-gradient(circle at 50% 50%, #d97706 0%, #9a3412 35%, #5c1806 70%, #1f0701 100%);
+      animation-name: blendLayer2;
+    }
+
+    .layer-blue {
+      background: radial-gradient(circle at 50% 50%, #0284c7 0%, #0369a1 35%, #0c4a6e 70%, #031726 100%);
+      animation-name: blendLayer3;
+    }
+
+    .layer-green {
+      background: radial-gradient(circle at 50% 50%, #65a30d 0%, #3f6212 35%, #1a3809 70%, #071703 100%);
+      animation-name: blendLayer4;
+    }
+
+    @keyframes blendLayer1 {
+      0%, 100% { opacity: 1; }
+      20% { opacity: 1; }
+      25% { opacity: 0; }
+      95% { opacity: 0; }
+    }
+
+    @keyframes blendLayer2 {
+      20% { opacity: 0; }
+      25% { opacity: 1; }
+      45% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    @keyframes blendLayer3 {
+      45% { opacity: 0; }
+      50% { opacity: 1; }
+      70% { opacity: 1; }
+      75% { opacity: 0; }
+    }
+
+    @keyframes blendLayer4 {
+      70% { opacity: 0; }
+      75% { opacity: 1; }
+      95% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Ondes de ripple douces */
+    .soft-gradient-ripple {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(25px);
+      opacity: 0;
+      animation: softWaterDrop 12s linear infinite;
+    }
+
+    .ripple-1 {
+      background: radial-gradient(circle, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.28) 55%, rgba(255, 255, 255, 0.12) 65%, transparent 75%);
+      animation-delay: 0s;
+    }
+    .ripple-2 {
+      background: radial-gradient(circle, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.22) 55%, rgba(255, 255, 255, 0.08) 65%, transparent 75%);
+      animation-delay: 4s;
+    }
+    .ripple-3 {
+      background: radial-gradient(circle, transparent 0%, transparent 45%, rgba(255, 255, 255, 0.16) 55%, rgba(255, 255, 255, 0.05) 65%, transparent 75%);
+      animation-delay: 8s;
+    }
+
+    @keyframes softWaterDrop {
+      0% { width: 10px; height: 10px; transform: translate(-50%, -50%) scale(0.2); opacity: 0.75; }
+      30% { opacity: 0.5; }
+      70% { opacity: 0.2; }
+      100% { width: 130vmax; height: 130vmax; transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
+    /* Châssis Chrome latéral */
+    .x360-side-blade-left {
       position: fixed;
-      top: 20%; left: -50%; width: 200%; height: 100%;
-      background: radial-gradient(ellipse 60% 40% at 50% 60%, rgba(147, 51, 234, 0.08), transparent 70%);
-      animation: waveFloat2 24s ease-in-out infinite alternate;
+      top: 0; left: -10px; width: 48px; height: 100vh;
+      background: linear-gradient(90deg, #8a9ba8 0%, #ffffff 40%, #52606d 90%, transparent 100%);
+      box-shadow: 8px 0 25px rgba(0,0,0,0.7);
+      border-right: 2px solid rgba(255,255,255,0.6);
+      border-radius: 0 45px 45px 0;
+      z-index: 2;
       pointer-events: none;
-      z-index: 0;
     }
 
-    @keyframes waveFloat {
-      0% { transform: translateY(-5%) rotate(-2deg); }
-      100% { transform: translateY(5%) rotate(2deg); }
-    }
-    @keyframes waveFloat2 {
-      0% { transform: translateY(6%) rotate(3deg); }
-      100% { transform: translateY(-6%) rotate(-3deg); }
+    .x360-side-blade-right {
+      position: fixed;
+      top: 0; right: -10px; width: 48px; height: 100vh;
+      background: linear-gradient(-90deg, #8a9ba8 0%, #ffffff 40%, #52606d 90%, transparent 100%);
+      box-shadow: -8px 0 25px rgba(0,0,0,0.7);
+      border-left: 2px solid rgba(255,255,255,0.6);
+      border-radius: 45px 0 0 45px;
+      z-index: 2;
+      pointer-events: none;
     }
 
-    .main-container { position: relative; z-index: 1; }
+    .main-container {
+      position: relative;
+      z-index: 3;
+      padding: 0 2.2rem;
+    }
 
-    .xmb-title {
+    /* Guide Bar Chrome */
+    .guide-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 1.6rem;
+      background: linear-gradient(180deg, #ffffff 0%, #d8e2ea 35%, #8a9ba8 70%, #2f3842 100%);
+      border-bottom: 2px solid #ffffff;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.85), inset 0 2px 0 rgba(255,255,255,0.9);
+    }
+
+    .xbox-sphere {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #b4ff6a 0%, #5dc21e 45%, #084008 100%);
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 18px #7aff29, inset 0 0 8px rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: #032b03;
       font-family: 'Rajdhani', sans-serif;
+      font-size: 1.4rem;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.6);
+    }
+
+    .dashboard-title {
+      font-family: 'Teko', sans-serif;
+      font-size: 2.3rem;
       letter-spacing: 3px;
       text-transform: uppercase;
-      font-weight: 700;
-      text-shadow: 0 0 12px rgba(0, 210, 255, 0.5);
+      color: #111827;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.8), 0 2px 4px rgba(0,0,0,0.4);
+      margin: 0;
+      line-height: 1;
     }
 
-    .glass-panel {
-      background: var(--ps-card-bg);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1px solid var(--ps-border);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
-    }
-
+    /* Kanban Board & Blades */
     .kanban-board {
       display: flex;
-      gap: 1.25rem;
+      gap: 1.75rem;
       overflow-x: auto;
-      padding-bottom: 2rem;
+      padding: 1.75rem 0.5rem 3rem 0.5rem;
       min-height: 80vh;
       align-items: flex-start;
       -webkit-overflow-scrolling: touch;
     }
 
     .kanban-col {
-      min-width: 310px;
-      max-width: 310px;
-      flex: 0 0 310px;
+      min-width: 325px;
+      max-width: 325px;
+      flex: 0 0 325px;
+      background: linear-gradient(180deg, rgba(28, 20, 42, 0.94) 0%, rgba(10, 6, 18, 0.98) 100%);
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      border-radius: 22px 22px 12px 12px;
+      box-shadow: 0 18px 45px rgba(0,0,0,0.85), inset 0 2px 1px rgba(255,255,255,0.6);
       display: flex;
       flex-direction: column;
       max-height: 82vh;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .col-ghost {
-      opacity: 0.3 !important;
-      background: rgba(0, 210, 255, 0.15) !important;
-      border: 2px dashed var(--ps-accent) !important;
-    }
-
-    .col-chosen {
-      box-shadow: 0 12px 30px rgba(0, 210, 255, 0.4) !important;
-      transform: scale(1.02);
     }
 
     .col-header {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 1.15rem;
-      letter-spacing: 1px;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--ps-border);
+      padding: 0.9rem 1.1rem;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       user-select: none;
-      -webkit-user-select: none;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.6);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.8);
     }
+
+    .blade-theme-0 { background: linear-gradient(180deg, #8fe838 0%, #56b814 50%, #206806 100%); }
+    .blade-theme-1 { background: linear-gradient(180deg, #ffa726 0%, #ea580c 50%, #7c2d12 100%); }
+    .blade-theme-2 { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 50%, #075985 100%); }
+    .blade-theme-3 { background: linear-gradient(180deg, #c084fc 0%, #9333ea 50%, #581c87 100%); }
+    .blade-theme-4 { background: linear-gradient(180deg, #fde047 0%, #eab308 50%, #854d0e 100%); }
 
     .col-drag-handle {
       cursor: grab;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      flex-grow: 1;
+      gap: 0.5rem;
+      font-family: 'Teko', sans-serif;
+      font-size: 1.7rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.7);
     }
 
-    .col-drag-handle:active {
-      cursor: grabbing;
-    }
+    .col-drag-handle:active { cursor: grabbing; }
 
     .task-list {
       flex-grow: 1;
-      padding: 0.75rem;
+      padding: 0.9rem;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.85rem;
       overflow-y: auto;
       min-height: 120px;
-      touch-action: pan-y;
     }
 
     .task-card {
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid var(--ps-border);
+      background: linear-gradient(180deg, rgba(45, 30, 65, 0.92) 0%, rgba(18, 10, 30, 0.97) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       border-radius: 8px;
       padding: 0.85rem;
-      cursor: grab;
+      cursor: pointer;
       position: relative;
-      user-select: none;
-      -webkit-user-select: none;
-      touch-action: manipulation;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.4);
+      transition: all 0.15s ease;
     }
 
-    .task-card:active {
-      cursor: grabbing;
-    }
-
-    .task-card.sortable-ghost {
-      opacity: 0.35;
-      background: rgba(0, 210, 255, 0.2);
-      border: 2px dashed var(--ps-accent);
-    }
-
-    .task-card.sortable-chosen {
-      box-shadow: 0 8px 25px rgba(0, 210, 255, 0.35);
-      transform: scale(1.02);
+    .task-card:hover {
+      transform: translateY(-2px) scale(1.01);
+      border-color: #38bdf8;
+      box-shadow: 0 8px 22px rgba(56, 189, 248, 0.4);
     }
 
     .task-card.active-timer {
-      border-color: var(--ps-accent);
-      box-shadow: 0 0 15px var(--ps-glow);
+      border-color: #5dc21e;
+      box-shadow: 0 0 20px rgba(93, 194, 30, 0.7);
     }
 
     .task-card.active-timer::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; width: 4px; height: 100%;
-      background: var(--ps-accent);
-      box-shadow: 0 0 10px var(--ps-accent);
+      top: 0; left: 0; width: 5px; height: 100%;
+      background: #5dc21e;
+      box-shadow: 0 0 12px #5dc21e;
+      border-radius: 8px 0 0 8px;
+    }
+
+    .btn-card-del {
+      background: rgba(220, 38, 38, 0.25);
+      border: 1px solid rgba(239, 68, 68, 0.6);
+      color: #fca5a5;
+      border-radius: 4px;
+      padding: 1px 7px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      transition: all 0.15s;
+    }
+    .btn-card-del:hover {
+      background: #dc2626;
+      color: #fff;
+      box-shadow: 0 0 8px #dc2626;
     }
 
     .color-pill {
       height: 6px;
       border-radius: 3px;
-      width: 48px;
-      margin-bottom: 8px;
+      width: 45px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.5);
     }
+
+    .time-tracker {
+      font-family: 'Rajdhani', monospace;
+      font-size: 0.95rem;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .time-progress-bar {
+      height: 5px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .time-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #5dc21e, #38bdf8);
+      transition: width 0.3s ease;
+    }
+
+    .time-progress-fill.overtime { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+
+    .btn-quick-add {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px dashed rgba(255, 255, 255, 0.4);
+      color: #e2e8f0;
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 6px;
+      font-family: 'Teko', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .btn-quick-add:hover {
+      background: rgba(56, 189, 248, 0.2);
+      color: #fff;
+      border-color: #38bdf8;
+    }
+
+    .xbox-btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      border-radius: 20px;
+      padding: 0.35rem 1rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn-a {
+      background: linear-gradient(180deg, #8fe838 0%, #2f7a0c 100%);
+      color: #fff;
+      border: 1px solid #b4ff6a;
+      box-shadow: 0 3px 10px rgba(47, 122, 12, 0.6);
+    }
+    .btn-a:hover { background: linear-gradient(180deg, #a2ff4d 0%, #38940e 100%); transform: scale(1.03); }
+
+    .btn-b {
+      background: linear-gradient(180deg, #f87171 0%, #b91c1c 100%);
+      color: #fff;
+      border: 1px solid #fca5a5;
+      box-shadow: 0 3px 10px rgba(185, 28, 28, 0.6);
+    }
+    .btn-b:hover { background: linear-gradient(180deg, #ef4444 0%, #991b1b 100%); transform: scale(1.03); }
+
+    .btn-chrome-icon {
+      background: linear-gradient(180deg, #ffffff 0%, #c4d1db 50%, #7b8d9d 100%);
+      border: 1px solid #ffffff;
+      color: #0f172a;
+      border-radius: 6px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0.4rem 1rem;
+    }
+    .btn-chrome-icon:hover { background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 50%, #94a3b8 100%); }
+
+    .xbox-badge-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: #000;
+      background: #fff;
+      box-shadow: inset 0 0 3px rgba(0,0,0,0.8);
+    }
+
+    /* Modales Natives */
+    .x360-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(5, 1, 10, 0.78);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .x360-modal-overlay.active { display: flex; }
+
+    #confirmModalOverlay { z-index: 2100; }
+
+    .x360-blade-modal {
+      width: 100%;
+      max-width: 820px;
+      background: linear-gradient(180deg, rgba(35, 15, 55, 0.98) 0%, rgba(14, 5, 25, 0.99) 100%);
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      border-radius: 20px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), inset 0 2px 2px rgba(255, 255, 255, 0.6);
+      overflow: hidden;
+      animation: bladeModalOpen 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .x360-blade-modal-sm { max-width: 420px; }
+
+    @keyframes bladeModalOpen {
+      0% { transform: scale(0.92) translateY(10px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .x360-modal-header {
+      padding: 1rem 1.4rem;
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 50%, #075985 100%);
+      border-bottom: 2px solid rgba(0,0,0,0.6);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .x360-modal-header.header-danger { background: linear-gradient(180deg, #f87171 0%, #dc2626 50%, #7f1d1d 100%); }
+    .x360-modal-header.header-green { background: linear-gradient(180deg, #8fe838 0%, #56b814 50%, #206806 100%); }
+
+    .x360-modal-body {
+      padding: 1.4rem;
+      color: #f1f5f9;
+    }
+
+    .x360-modal-footer {
+      padding: 0.9rem 1.4rem;
+      background: rgba(10, 4, 18, 0.85);
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.8rem;
+    }
+
+    .x360-input, .x360-select, .x360-textarea {
+      background: rgba(45, 20, 75, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 6px;
+      color: #fff;
+      padding: 0.5rem 0.75rem;
+      width: 100%;
+      outline: none;
+      transition: all 0.15s;
+    }
+
+    .x360-input:focus, .x360-select:focus, .x360-textarea:focus {
+      background: rgba(60, 28, 95, 1);
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+    }
+
+    .x360-card-title-input {
+      font-size: 1.3rem;
+      font-weight: 700;
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: 2px dashed rgba(255,255,255,0.4);
+      color: #ffffff;
+      width: 100%;
+      outline: none;
+      padding: 0.2rem 0;
+    }
+    .x360-card-title-input:focus { border-bottom-color: #38bdf8; }
 
     .color-palette {
       display: flex;
@@ -203,105 +528,16 @@
       border: 2px solid transparent;
       transition: transform 0.15s, border-color 0.15s;
     }
-
     .color-dot:hover { transform: scale(1.15); }
     .color-dot.selected {
       border-color: #ffffff;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
       transform: scale(1.15);
     }
 
-    .time-tracker {
-      font-family: 'Rajdhani', monospace;
-      font-size: 0.9rem;
-      background: rgba(0, 0, 0, 0.45);
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    .time-progress-bar {
-      height: 4px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 2px;
-      overflow: hidden;
-      margin-top: 6px;
-    }
-
-    .time-progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #00d2ff, #38bdf8);
-      transition: width 0.3s ease;
-    }
-
-    .time-progress-fill.overtime {
-      background: linear-gradient(90deg, #f59e0b, #ef4444);
-    }
-
-    .btn-quick-add {
-      background: transparent;
-      border: 1px dashed var(--ps-border);
-      color: #94a3b8;
-      width: 100%;
-      padding: 0.55rem;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-family: 'Rajdhani', sans-serif;
-      letter-spacing: 0.5px;
-      transition: all 0.2s;
-    }
-
-    .btn-quick-add:hover {
-      background: rgba(255, 255, 255, 0.05);
-      color: #fff;
-      border-color: var(--ps-accent);
-    }
-
-    .ps-btn {
-      font-family: 'Rajdhani', sans-serif;
-      letter-spacing: 1.5px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-      text-transform: uppercase;
-      font-weight: 600;
-    }
-
-    .ps-btn-primary {
-      background: linear-gradient(135deg, #0072ff 0%, #00d2ff 100%);
-      border: none;
-      color: #fff;
-      box-shadow: 0 4px 15px rgba(0, 210, 255, 0.25);
-    }
-
-    .ps-btn-primary:hover {
-      box-shadow: 0 4px 20px rgba(0, 210, 255, 0.5);
-      transform: scale(1.02);
-      color: #fff;
-    }
-
-    .modal-content {
-      background: #0d1322;
-      border: 1px solid var(--ps-border);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.85);
-      border-radius: 12px;
-    }
-
-    .form-control, .form-select {
-      background: rgba(26, 36, 56, 0.8);
-      border: 1px solid var(--ps-border);
-      color: #fff;
-    }
-
-    .form-control:focus, .form-select:focus {
-      background: rgba(26, 36, 56, 1);
-      border-color: var(--ps-accent);
-      box-shadow: 0 0 12px var(--ps-glow);
-      color: #fff;
-    }
-
     .comment-bubble {
-      background: rgba(26, 36, 56, 0.6);
-      border-left: 3px solid var(--ps-accent);
+      background: rgba(45, 20, 75, 0.7);
+      border-left: 3px solid #38bdf8;
       padding: 0.5rem 0.75rem;
       border-radius: 0 6px 6px 0;
       margin-bottom: 0.5rem;
@@ -310,570 +546,164 @@
 
     .inline-add-box {
       display: none;
-      background: rgba(20, 29, 48, 0.9);
-      border: 1px solid var(--ps-border);
+      background: rgba(30, 12, 50, 0.95);
+      border: 1px solid rgba(255,255,255,0.3);
       border-radius: 6px;
       padding: 0.65rem;
       margin-bottom: 0.5rem;
     }
   </style>
 </head>
-<body class="p-3 p-md-4">
-  <div class="xmb-wave"></div>
-  <div class="xmb-wave-secondary"></div>
+<body>
 
-  <div class="main-container container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-      <div>
-        <h2 class="xmb-title m-0 text-white">XMB Task Control</h2>
-        <div class="small text-secondary d-flex align-items-center gap-2">
-          <span>Google Sheets Cloud Sync</span>
-          <span id="sync-status" class="badge bg-success">Synchro active</span>
+  <!-- Arrière-plan -->
+  <div class="x360-ambient-bg">
+    <div class="bg-color-layer layer-purple"></div>
+    <div class="bg-color-layer layer-orange"></div>
+    <div class="bg-color-layer layer-blue"></div>
+    <div class="bg-color-layer layer-green"></div>
+
+    <div class="soft-gradient-ripple ripple-1"></div>
+    <div class="soft-gradient-ripple ripple-2"></div>
+    <div class="soft-gradient-ripple ripple-3"></div>
+  </div>
+
+  <div class="x360-side-blade-left"></div>
+  <div class="x360-side-blade-right"></div>
+
+  <div class="main-container">
+    <div class="guide-bar">
+      <div class="d-flex align-items-center gap-3">
+        <div class="xbox-sphere">✕</div>
+        <div>
+          <h1 class="dashboard-title">Xbox 360 Dashboard</h1>
+          <div class="small text-dark fw-bold d-flex align-items-center gap-2">
+            <span>Google Sheets Live Cloud</span>
+            <span id="sync-status" class="badge bg-success">Connecté</span>
+          </div>
         </div>
       </div>
       <div class="d-flex gap-2">
-        <button class="btn ps-btn btn-outline-info btn-sm" onclick="openNewColModal()">+ Nouvelle Colonne</button>
-        <button class="btn ps-btn btn-outline-secondary btn-sm" onclick="loadCloudData()">🔄 Forcer Synchro</button>
+        <button class="btn btn-chrome-icon btn-sm" onclick="openNewColModal()">+ Ajouter Blade</button>
+        <button class="btn btn-chrome-icon btn-sm" onclick="loadCloudData()">🔄 Forcer Synchro</button>
       </div>
     </div>
 
-    <!-- Tableau Kanban -->
     <div class="kanban-board" id="board-container"></div>
   </div>
 
-  <!-- Modal Nouvelle Colonne -->
-  <div class="modal fade" id="colModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-      <div class="modal-content text-light">
-        <div class="modal-header border-secondary">
-          <h6 class="modal-title xmb-title">Nouvelle Colonne</h6>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <label class="form-label small text-secondary">Nom de la colonne</label>
-          <input type="text" class="form-control form-control-sm" id="new-col-name" placeholder="Ex: Revue de code" onkeydown="if(event.key==='Enter') submitNewColumn()">
-        </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="button" class="btn btn-sm ps-btn ps-btn-primary" onclick="submitNewColumn()">Créer</button>
-        </div>
+  <!-- MODAL NOUVELLE BLADE -->
+  <div class="x360-modal-overlay" id="colModalOverlay" onclick="closeModalOnOverlay(event, 'colModalOverlay')">
+    <div class="x360-blade-modal x360-blade-modal-sm">
+      <div class="x360-modal-header header-green">
+        <h4 class="m-0 font-monospace text-uppercase fw-bold" style="font-family: 'Teko'; letter-spacing: 2px;">Nouvelle Blade</h4>
+        <button class="btn-close btn-close-white" onclick="closeModal('colModalOverlay')"></button>
+      </div>
+      <div class="x360-modal-body">
+        <label class="form-label small text-white-50">Nom de la colonne / Blade</label>
+        <input type="text" class="x360-input" id="new-col-name" placeholder="Ex: En Révision" onkeydown="if(event.key==='Enter') submitNewColumn()">
+      </div>
+      <div class="x360-modal-footer">
+        <button class="xbox-btn-action btn-b" onclick="closeModal('colModalOverlay')">
+          <span class="xbox-badge-circle" style="background: #f87171; color: #fff;">B</span> Annuler
+        </button>
+        <button class="xbox-btn-action btn-a" onclick="submitNewColumn()">
+          <span class="xbox-badge-circle" style="background: #8fe838; color: #000;">A</span> Créer
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Modal Confirmation Suppression -->
-  <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-      <div class="modal-content text-light">
-        <div class="modal-header border-secondary">
-          <h6 class="modal-title xmb-title text-danger" id="confirm-modal-title">Confirmation</h6>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body small text-secondary" id="confirm-modal-text"></div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
-          <button type="button" class="btn btn-sm btn-danger" id="confirm-modal-btn">Confirmer</button>
-        </div>
+  <!-- MODAL CONFIRMATION SUPPRESSION -->
+  <div class="x360-modal-overlay" id="confirmModalOverlay" onclick="closeModalOnOverlay(event, 'confirmModalOverlay')">
+    <div class="x360-blade-modal x360-blade-modal-sm">
+      <div class="x360-modal-header header-danger">
+        <h4 class="m-0 fw-bold" style="font-family: 'Teko'; letter-spacing: 2px;">CONFIRMATION</h4>
+        <button class="btn-close btn-close-white" onclick="closeModal('confirmModalOverlay')"></button>
+      </div>
+      <div class="x360-modal-body" id="confirm-modal-text"></div>
+      <div class="x360-modal-footer">
+        <button class="xbox-btn-action btn-b" onclick="closeModal('confirmModalOverlay')">
+          <span class="xbox-badge-circle" style="background: #f87171; color: #fff;">B</span> Non
+        </button>
+        <button class="xbox-btn-action btn-b fw-bold" id="confirm-modal-btn">
+          <span class="xbox-badge-circle" style="background: #ef4444; color: #fff;">X</span> Supprimer
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Modal Détails & Édition Trello Style -->
-  <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content text-light">
-        <div class="modal-header border-secondary pb-2">
-          <div class="w-100">
-            <input type="text" class="form-control fw-bold fs-5 border-0 bg-transparent text-light p-0 mb-2" id="m-title" placeholder="Titre de la tâche">
-            <div class="d-flex align-items-center gap-2">
-              <span class="small text-secondary" style="font-size: 0.8rem;">Badge :</span>
-              <div class="color-palette" id="m-color-palette"></div>
-            </div>
-          </div>
-          <button type="button" class="btn-close btn-close-white align-self-start" data-bs-dismiss="modal"></button>
-        </div>
-        
-        <div class="modal-body">
-          <div class="row g-3">
-            <div class="col-md-8">
-              <div class="mb-3">
-                <label class="form-label small text-secondary">Description</label>
-                <textarea class="form-control" id="m-desc" rows="4" placeholder="Ajouter une description..."></textarea>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label small text-secondary">Discussion & Historique</label>
-                <div id="m-comments-list" class="mb-2" style="max-height: 180px; overflow-y: auto;"></div>
-                <div class="input-group">
-                  <input type="text" class="form-control form-control-sm" id="m-new-comment" placeholder="Écrire un commentaire..." onkeydown="if(event.key==='Enter') addComment()">
-                  <button class="btn ps-btn ps-btn-primary btn-sm" onclick="addComment()">Envoyer</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="mb-3">
-                <label class="form-label small text-secondary">Colonne / Statut</label>
-                <select class="form-select form-select-sm" id="m-column"></select>
-              </div>
-              <div class="mb-3">
-                <label class="form-label small text-secondary">Date d'échéance</label>
-                <input type="date" class="form-control form-control-sm" id="m-due-date">
-              </div>
-              <div class="mb-3">
-                <label class="form-label small text-secondary">Temps attendu (min)</label>
-                <input type="number" class="form-control form-control-sm" id="m-est" min="0">
-              </div>
-              <div class="mb-3">
-                <label class="form-label small text-secondary">Temps passé (sec)</label>
-                <div class="input-group input-group-sm">
-                  <input type="number" class="form-control" id="m-spent" min="0">
-                  <button class="btn btn-outline-warning" onclick="resetTaskTimer()">0s</button>
-                </div>
-              </div>
-              <hr class="border-secondary">
-              <button class="btn btn-outline-danger btn-sm w-100" onclick="triggerDeleteTask()">Supprimer la tâche</button>
-            </div>
+  <!-- MODAL DÉTAILS -->
+  <div class="x360-modal-overlay" id="detailModalOverlay" onclick="closeModalOnOverlay(event, 'detailModalOverlay')">
+    <div class="x360-blade-modal">
+      <div class="x360-modal-header">
+        <div class="w-100 me-3">
+          <input type="text" class="x360-card-title-input" id="m-title" placeholder="Titre de la tâche">
+          <div class="d-flex align-items-center gap-2 mt-2">
+            <span class="small text-white-50" style="font-size: 0.8rem;">BADGE :</span>
+            <div class="color-palette" id="m-color-palette"></div>
           </div>
         </div>
-        <div class="modal-footer border-secondary">
-          <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
-          <button type="button" class="btn btn-sm ps-btn ps-btn-primary" onclick="saveTaskModal()">Enregistrer</button>
-        </div>
+        <button class="btn-close btn-close-white align-self-start" onclick="closeModal('detailModalOverlay')"></button>
       </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxF_bnX7Kq4QNDrhNACTfpvhjGpVPt-gJ6CMy6GkO0qdWH2YfgNkXMdtp6z_ZSkgS0MQA/exec";
-
-    const BADGE_COLORS = [
-      { name: "Cyan", hex: "#00d2ff" },
-      { name: "Bleu", hex: "#2563eb" },
-      { name: "Vert", hex: "#22c55e" },
-      { name: "Jaune", hex: "#eab308" },
-      { name: "Orange", hex: "#f97316" },
-      { name: "Rouge", hex: "#ef4444" },
-      { name: "Violet", hex: "#a855f7" },
-      { name: "Rose", hex: "#ec4899" },
-      { name: "Gris", hex: "#64748b" }
-    ];
-
-    let selectedBadgeColor = "#00d2ff";
-
-    let columns = JSON.parse(localStorage.getItem("trello_cols")) || [
-      { ID: "col_1", Titre: "À faire", Ordre: 1 },
-      { ID: "col_2", Titre: "En cours", Ordre: 2 },
-      { ID: "col_3", Titre: "Terminé", Ordre: 3 }
-    ];
-    let tasks = JSON.parse(localStorage.getItem("trello_tasks")) || [];
-    
-    let activeTimerTaskId = null;
-    let timerInterval = null;
-    let currentModalTaskId = null;
-    let syncTimeout = null;
-    let boardSortableInstance = null;
-
-    const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
-    const colModal = new bootstrap.Modal(document.getElementById('colModal'));
-    const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
-
-    function setStatus(msg, type = "success") {
-      const el = document.getElementById('sync-status');
-      if (el) {
-        el.className = `badge bg-${type}`;
-        el.innerText = msg;
-      }
-    }
-
-    function commitLocalAndTriggerCloud() {
-      localStorage.setItem("trello_cols", JSON.stringify(columns));
-      localStorage.setItem("trello_tasks", JSON.stringify(tasks));
-      renderBoard();
-
-      setStatus("Synchro...", "warning");
-      clearTimeout(syncTimeout);
-      syncTimeout = setTimeout(async () => {
-        try {
-          await fetch(API_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({
-              action: "sync_all",
-              columns: columns,
-              tasks: tasks
-            })
-          });
-          setStatus("Synchro active", "success");
-        } catch (err) {
-          console.error("Erreur synchro cloud:", err);
-          setStatus("Mode Local", "secondary");
-        }
-      }, 1000);
-    }
-
-    async function loadCloudData() {
-      setStatus("Chargement...", "info");
-      try {
-        const res = await fetch(API_URL, { method: "GET", mode: "cors", redirect: "follow" });
-        const json = await res.json();
-        if (json.status === "success") {
-          if (json.columns && json.columns.length > 0) {
-            columns = json.columns.sort((a, b) => (parseInt(a.Ordre, 10) || 0) - (parseInt(b.Ordre, 10) || 0));
-          }
-          if (json.tasks) {
-            tasks = json.tasks.map(t => {
-              let comments = [];
-              try { comments = JSON.parse(t.Commentaires); } catch (e) { comments = []; }
-              return { ...t, Commentaires: Array.isArray(comments) ? comments : [] };
-            });
-          }
-          commitLocalAndTriggerCloud();
-        }
-      } catch (err) {
-        console.warn("Connexion cloud indisponible, utilisation du cache local.", err);
-        setStatus("Cache local actif", "warning");
-      }
-    }
-
-    function formatTime(seconds) {
-      const s = parseInt(seconds, 10) || 0;
-      const mins = Math.floor(s / 60);
-      const secs = s % 60;
-      return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
-    }
-
-    function renderBoard() {
-      const board = document.getElementById('board-container');
-      board.innerHTML = '';
-
-      columns.forEach(col => {
-        const colTasks = tasks.filter(t => t.Statut === col.Titre);
-
-        const colEl = document.createElement('div');
-        colEl.className = 'kanban-col glass-panel';
-        colEl.dataset.colId = String(col.ID);
-        colEl.dataset.colTitle = col.Titre;
-
-        colEl.innerHTML = `
-          <div class="col-header">
-            <div class="col-drag-handle">
-              <span class="text-secondary" style="font-size: 1.1rem; cursor: grab;">⠿</span>
-              <span class="text-light fw-bold">${col.Titre}</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge bg-dark border border-secondary">${colTasks.length}</span>
-              <button class="btn btn-link text-secondary p-0 text-decoration-none" onclick="triggerDeleteColumn('${col.ID}')">✕</button>
-            </div>
-          </div>
-          
-          <div class="task-list" id="list-${col.ID}" data-col-title="${col.Titre}"></div>
-
-          <div class="p-2 pt-0">
-            <div class="inline-add-box" id="inline-box-${col.ID}">
-              <input type="text" class="form-control form-control-sm mb-2" id="inline-input-${col.ID}" placeholder="Titre de la tâche..." onkeydown="if(event.key==='Enter') saveInlineTask('${col.ID}', '${col.Titre}')">
-              <div class="d-flex justify-content-end gap-1">
-                <button class="btn btn-sm btn-outline-secondary py-0" onclick="toggleInlineAdd('${col.ID}', false)">Annuler</button>
-                <button class="btn btn-sm ps-btn ps-btn-primary py-0" onclick="saveInlineTask('${col.ID}', '${col.Titre}')">Ajouter</button>
-              </div>
-            </div>
-            <button class="btn-quick-add" id="inline-btn-${col.ID}" onclick="toggleInlineAdd('${col.ID}', true)">+ Ajouter une tâche</button>
-          </div>
-        `;
-
-        const taskList = colEl.querySelector(`#list-${col.ID}`);
-
-        colTasks.forEach(task => {
-          const isRunning = activeTimerTaskId === String(task.ID);
-          const spentSec = parseInt(task.TempsPassé_Sec, 10) || 0;
-          const estMin = parseInt(task.TempsEstimé_Min, 10) || 0;
-          const estSec = estMin * 60;
-          const pct = estSec > 0 ? Math.min(100, Math.round((spentSec / estSec) * 100)) : 0;
-          const isOvertime = estSec > 0 && spentSec > estSec;
-
-          const card = document.createElement('div');
-          card.className = `task-card ${isRunning ? 'active-timer' : ''}`;
-          card.dataset.id = String(task.ID);
-
-          card.onclick = (e) => {
-            if (e.target.closest('button') || e.target.closest('input')) return;
-            openTaskModal(task.ID);
-          };
-
-          card.innerHTML = `
-            <div class="color-pill" style="background: ${task.Couleur || '#00d2ff'}"></div>
-            <div class="fw-semibold text-light mb-1">${task.Titre}</div>
-            ${task.DateEcheance ? `<div class="small text-secondary mb-2">📅 ${task.DateEcheance}</div>` : ''}
-            
-            <div class="d-flex justify-content-between align-items-center mt-2">
-              <span class="time-tracker text-info">
-                ⏱️ <span id="timer-${task.ID}">${formatTime(spentSec)}</span> / ${estMin}m
-              </span>
-              <button class="btn btn-sm py-0 px-2 ${isRunning ? 'btn-danger' : 'btn-outline-info'}" onclick="toggleTimer('${task.ID}')">
-                ${isRunning ? 'Pause' : 'Punch'}
-              </button>
-            </div>
-
-            <div class="time-progress-bar">
-              <div class="time-progress-fill ${isOvertime ? 'overtime' : ''}" style="width: ${pct}%"></div>
-            </div>
-          `;
-          taskList.appendChild(card);
-        });
-
-        board.appendChild(colEl);
-
-        // Sortable pour les tâches de chaque colonne
-        new Sortable(taskList, {
-          group: 'xmb-kanban-tasks',
-          animation: 180,
-          ghostClass: 'sortable-ghost',
-          chosenClass: 'sortable-chosen',
-          delay: 40,
-          delayOnTouchOnly: true,
-          touchStartThreshold: 4,
-          onEnd: function (evt) {
-            const taskId = evt.item.dataset.id;
-            const newColTitle = evt.to.dataset.colTitle;
-            const task = tasks.find(t => String(t.ID) === String(taskId));
-            
-            if (task && task.Statut !== newColTitle) {
-              task.Statut = newColTitle;
-              commitLocalAndTriggerCloud();
-            }
-          }
-        });
-      });
-
-      // Initialisation / Réinitialisation propre du Drag & Drop des colonnes
-      if (boardSortableInstance) {
-        boardSortableInstance.destroy();
-      }
       
-      boardSortableInstance = new Sortable(board, {
-        handle: '.col-drag-handle',
-        animation: 200,
-        ghostClass: 'col-ghost',
-        chosenClass: 'col-chosen',
-        delay: 50,
-        delayOnTouchOnly: true,
-        touchStartThreshold: 5,
-        onEnd: function () {
-          const newOrderedCols = [];
-          board.querySelectorAll('.kanban-col').forEach((el, index) => {
-            const colId = el.dataset.colId;
-            const cObj = columns.find(c => String(c.ID) === String(colId));
-            if (cObj) {
-              cObj.Ordre = index + 1;
-              newOrderedCols.push(cObj);
-            }
-          });
-          columns = newOrderedCols;
-          commitLocalAndTriggerCloud();
-        }
-      });
-    }
+      <div class="x360-modal-body">
+        <div class="row g-3">
+          <div class="col-md-7">
+            <div class="mb-3">
+              <label class="form-label small text-white-50">Description de l'opération</label>
+              <textarea class="x360-textarea" id="m-desc" rows="4" placeholder="Détails de la tâche..."></textarea>
+            </div>
 
-    function toggleInlineAdd(colId, show) {
-      document.getElementById(`inline-box-${colId}`).style.display = show ? 'block' : 'none';
-      document.getElementById(`inline-btn-${colId}`).style.display = show ? 'none' : 'block';
-      if (show) document.getElementById(`inline-input-${colId}`).focus();
-    }
+            <div class="mb-3">
+              <label class="form-label small text-white-50">Discussion & Activités</label>
+              <div id="m-comments-list" class="mb-2" style="max-height: 170px; overflow-y: auto;"></div>
+              <div class="input-group">
+                <input type="text" class="x360-input" id="m-new-comment" placeholder="Ajouter une note..." onkeydown="if(event.key==='Enter') addComment()">
+                <button class="xbox-btn-action btn-a ms-2" onclick="addComment()">Ajouter</button>
+              </div>
+            </div>
+          </div>
 
-    function saveInlineTask(colId, colTitle) {
-      const input = document.getElementById(`inline-input-${colId}`);
-      const title = input.value.trim();
-      if (!title) return;
+          <div class="col-md-5">
+            <div class="mb-3">
+              <label class="form-label small text-white-50">Blade / Emplacement</label>
+              <select class="x360-select" id="m-column"></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-white-50">Date d'échéance</label>
+              <input type="date" class="x360-input" id="m-due-date">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-white-50">Temps attendu (min)</label>
+              <input type="number" class="x360-input" id="m-est" min="0">
+            </div>
+            <div class="mb-3">
+              <label class="form-label small text-white-50">Temps passé (sec)</label>
+              <div class="d-flex gap-2">
+                <input type="number" class="x360-input" id="m-spent" min="0">
+                <button class="xbox-btn-action btn-b py-1" onclick="resetTaskTimer()">0s</button>
+              </div>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.2);">
+            <button class="xbox-btn-action btn-b w-100 justify-content-center" onclick="triggerDeleteTaskFromModal()">
+              <span class="xbox-badge-circle" style="background: #f87171; color: #fff;">X</span> Supprimer cette tâche
+            </button>
+          </div>
+        </div>
+      </div>
 
-      const newTask = {
-        ID: "TASK_" + Date.now(),
-        Titre: title,
-        Description: "",
-        Statut: colTitle,
-        TempsEstimé_Min: 30,
-        TempsPassé_Sec: 0,
-        DateEcheance: "",
-        Couleur: "#00d2ff",
-        Commentaires: []
-      };
+      <div class="x360-modal-footer">
+        <button class="xbox-btn-action btn-b" onclick="closeModal('detailModalOverlay')">
+          <span class="xbox-badge-circle" style="background: #f87171; color: #fff;">B</span> Fermer
+        </button>
+        <button class="xbox-btn-action btn-a" onclick="saveTaskModal()">
+          <span class="xbox-badge-circle" style="background: #8fe838; color: #000;">A</span> Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
 
-      tasks.push(newTask);
-      input.value = '';
-      toggleInlineAdd(colId, false);
-      commitLocalAndTriggerCloud();
-    }
-
-    function openNewColModal() {
-      document.getElementById('new-col-name').value = '';
-      colModal.show();
-      setTimeout(() => document.getElementById('new-col-name').focus(), 300);
-    }
-
-    function submitNewColumn() {
-      const name = document.getElementById('new-col-name').value.trim();
-      if (!name) return;
-      columns.push({
-        ID: "col_" + Date.now(),
-        Titre: name,
-        Ordre: columns.length + 1
-      });
-      colModal.hide();
-      commitLocalAndTriggerCloud();
-    }
-
-    function triggerDeleteColumn(colId) {
-      const col = columns.find(c => String(c.ID) === String(colId));
-      if (!col) return;
-
-      document.getElementById('confirm-modal-title').innerText = "Supprimer la colonne";
-      document.getElementById('confirm-modal-text').innerText = `Voulez-vous supprimer "${col.Titre}" et toutes les tâches associées ?`;
-      document.getElementById('confirm-modal-btn').onclick = () => {
-        columns = columns.filter(c => String(c.ID) !== String(colId));
-        tasks = tasks.filter(t => t.Statut !== col.Titre);
-        confirmModal.hide();
-        commitLocalAndTriggerCloud();
-      };
-      confirmModal.show();
-    }
-
-    function toggleTimer(taskId) {
-      const sid = String(taskId);
-      const task = tasks.find(t => String(t.ID) === sid);
-      if (!task) return;
-
-      if (activeTimerTaskId === sid) {
-        clearInterval(timerInterval);
-        activeTimerTaskId = null;
-        commitLocalAndTriggerCloud();
-      } else {
-        if (activeTimerTaskId) clearInterval(timerInterval);
-        activeTimerTaskId = sid;
-        timerInterval = setInterval(() => {
-          task.TempsPassé_Sec = (parseInt(task.TempsPassé_Sec, 10) || 0) + 1;
-          const el = document.getElementById(`timer-${sid}`);
-          if (el) el.innerText = formatTime(task.TempsPassé_Sec);
-        }, 1000);
-      }
-      renderBoard();
-    }
-
-    function renderColorPalette(currentColor) {
-      const palette = document.getElementById('m-color-palette');
-      palette.innerHTML = '';
-      selectedBadgeColor = currentColor || BADGE_COLORS[0].hex;
-
-      BADGE_COLORS.forEach(c => {
-        const dot = document.createElement('div');
-        dot.className = `color-dot ${selectedBadgeColor === c.hex ? 'selected' : ''}`;
-        dot.style.background = c.hex;
-        dot.title = c.name;
-        dot.onclick = () => {
-          selectedBadgeColor = c.hex;
-          document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
-          dot.classList.add('selected');
-        };
-        palette.appendChild(dot);
-      });
-    }
-
-    function openTaskModal(taskId) {
-      currentModalTaskId = String(taskId);
-      const task = tasks.find(t => String(t.ID) === currentModalTaskId);
-      if (!task) return;
-
-      document.getElementById('m-title').value = task.Titre;
-      document.getElementById('m-desc').value = task.Description || '';
-      document.getElementById('m-due-date').value = task.DateEcheance || '';
-      document.getElementById('m-est').value = task.TempsEstimé_Min || 0;
-      document.getElementById('m-spent').value = task.TempsPassé_Sec || 0;
-
-      renderColorPalette(task.Couleur || "#00d2ff");
-
-      const colSelect = document.getElementById('m-column');
-      colSelect.innerHTML = '';
-      columns.forEach(col => {
-        const opt = document.createElement('option');
-        opt.value = col.Titre;
-        opt.innerText = col.Titre;
-        opt.selected = col.Titre === task.Statut;
-        colSelect.appendChild(opt);
-      });
-
-      renderCommentsList(task.Commentaires || []);
-      detailModal.show();
-    }
-
-    function renderCommentsList(comments) {
-      const box = document.getElementById('m-comments-list');
-      box.innerHTML = '';
-      if (!comments || comments.length === 0) {
-        box.innerHTML = '<div class="small text-secondary">Aucun historique pour le moment.</div>';
-        return;
-      }
-      comments.forEach(c => {
-        const b = document.createElement('div');
-        b.className = 'comment-bubble';
-        b.innerHTML = `<div class="d-flex justify-content-between text-secondary"><span class="fw-bold">${c.date}</span></div><div class="mt-1">${c.text}</div>`;
-        box.appendChild(b);
-      });
-    }
-
-    function addComment() {
-      const input = document.getElementById('m-new-comment');
-      const text = input.value.trim();
-      if (!text || !currentModalTaskId) return;
-
-      const task = tasks.find(t => String(t.ID) === currentModalTaskId);
-      if (!task) return;
-
-      if (!task.Commentaires) task.Commentaires = [];
-      const now = new Date();
-      task.Commentaires.push({
-        date: `${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-        text: text
-      });
-
-      input.value = '';
-      renderCommentsList(task.Commentaires);
-    }
-
-    function saveTaskModal() {
-      const task = tasks.find(t => String(t.ID) === currentModalTaskId);
-      if (!task) return;
-
-      task.Titre = document.getElementById('m-title').value.trim() || task.Titre;
-      task.Description = document.getElementById('m-desc').value.trim();
-      task.Couleur = selectedBadgeColor;
-      task.Statut = document.getElementById('m-column').value;
-      task.DateEcheance = document.getElementById('m-due-date').value;
-      task.TempsEstimé_Min = parseInt(document.getElementById('m-est').value, 10) || 0;
-      task.TempsPassé_Sec = parseInt(document.getElementById('m-spent').value, 10) || 0;
-
-      detailModal.hide();
-      commitLocalAndTriggerCloud();
-    }
-
-    function triggerDeleteTask() {
-      document.getElementById('confirm-modal-title').innerText = "Supprimer la tâche";
-      document.getElementById('confirm-modal-text').innerText = "Voulez-vous définitivement supprimer cette tâche ?";
-      document.getElementById('confirm-modal-btn').onclick = () => {
-        tasks = tasks.filter(t => String(t.ID) !== currentModalTaskId);
-        detailModal.hide();
-        confirmModal.hide();
-        commitLocalAndTriggerCloud();
-      };
-      confirmModal.show();
-    }
-
-    function resetTaskTimer() {
-      document.getElementById('m-spent').value = 0;
-    }
-
-    // Démarrage
-    renderBoard();
-    loadCloudData();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
